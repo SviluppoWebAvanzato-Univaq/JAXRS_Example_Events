@@ -1,12 +1,11 @@
 package org.univaq.swa.eventsrest.jackson;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.ext.ContextResolver;
 import jakarta.ws.rs.ext.Provider;
+import org.univaq.swa.eventsrest.model.Event;
 
 /**
  *
@@ -27,21 +26,24 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
     }
 
     private ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper m = new ObjectMapper();
         //abilitiamo una feature nuova...
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        m.enable(SerializationFeature.INDENT_OUTPUT);
         SimpleModule customSerializer = new SimpleModule("CustomSerializersModule");
+        customSerializer.addSerializer(Event.class, new EventSerializer());
+        customSerializer.addDeserializer(Event.class, new EventDeserializer());
 
         //
-        mapper.registerModule(customSerializer);
+        m.registerModule(customSerializer);
 
         //per il supporto alla serializzazione automatica dei tipi Date/Time di Java 8 (ZonedDateTime, LocalTime, ecc.)
         //è necessario aggiungere alle dipendenze la libreria com.fasterxml.jackson.datatype:jackson-datatype-jsr310
         //mapper.registerModule(new JavaTimeModule());
         //questa feature fa cercare a Jackson tutti i moduli compatibili inseriti nel contesto...
-        mapper.findAndRegisterModules();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        m.findAndRegisterModules();
+        //perchè le date appaiano "human readable"
+        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        return mapper;
+        return m;
     }
 }

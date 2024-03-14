@@ -14,7 +14,7 @@ public class Event {
     private String location = null;
     private ZonedDateTime start = null;
     private ZonedDateTime end = null;
-    private List<String> categories = null;
+    private List<String> categories = new ArrayList<>();
     private byte[] attachment = null;
     private List<Participant> participants = new ArrayList<>();
     private Recurrence recurrence = null;

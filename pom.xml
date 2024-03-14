@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.univaq.swa.fattura</groupId>
-    <artifactId>EventsREST</artifactId>
+    <artifactId>EventsREST_JAXRS</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>EventsREST</name>
+    <name>EventsREST_JAXRS</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>

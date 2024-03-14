@@ -1,6 +1,6 @@
 package org.univaq.swa.eventsrest.business;
 
-import jakarta.ws.rs.core.SecurityContext;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.List;
 import org.univaq.swa.eventsrest.DatabaseException;
@@ -17,11 +17,7 @@ public interface EventsService {
 
     String addEvent(Event body);
 
-    String addParticipant(String uid, Participant body) throws NotFoundException;
-
     void deleteEvent(String uid) throws NotFoundException, DatabaseException;
-
-    void deleteParticipant(String uid, String partid) throws NotFoundException, DatabaseException;
 
     List<Event> getCurrentEvents(List<String> cat);
 
@@ -34,7 +30,11 @@ public interface EventsService {
     void updateEvent(String uid, Event body) throws NotFoundException, DatabaseException;
 
     void updateRecurrence(String uid, Recurrence body) throws NotFoundException, DatabaseException;
-    
-    
+
+    String addParticipant(String uid, Participant body) throws NotFoundException;
+
+    void deleteParticipant(String uid, String partid) throws NotFoundException, DatabaseException;
+
+    void updateAttachment(String uid, InputStream data) throws NotFoundException, DatabaseException;
 
 }

@@ -46,7 +46,6 @@ public class AuthLoggedFilter implements ContainerRequestFilter {
                     requestContext.setProperty("token", token);
                     requestContext.setProperty("user", username);
                     //OPPURE
-                    // https://dzone.com/articles/custom-security-context-injax-rs
                     //mettiamo i dati anche nel securitycontext standard di JAXRS...
                     //che può essere iniettato con @Context SecurityContext nei metodi
                     //final SecurityContext originalSecurityContext = requestContext.getSecurityContext();

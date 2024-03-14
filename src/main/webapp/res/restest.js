@@ -61,15 +61,15 @@ function Restest(testall = true) {
         return function (callResponse, callStatus, callAuthHeader) {
             console.log(params.method + " " + params.url + " response: " + callStatus + ": " + callResponse.substring(0, 50));
             if (params.responseTarget) {
-                params.responseTarget.textContent = callStatus + ": " + callResponse;
+                params.responseTarget.innerHTML = "<strong>" + callStatus + "</strong>: " + callResponse;
             }
-            if (params.source) {
-                params.source.classList.remove("rest-test-wait");
+            if (params.requestTarget) {
+                params.requestTarget.classList.remove("rest-test-wait");
             }
-            if ((params.responseStatus === null || (callStatus == params.responseStatus))
+            if ((params.responseStatus === null || (callStatus === parseInt(params.responseStatus)))
                     && (params.responseText === null || (callResponse === params.responseText))) {
-                if (params.source) {
-                    params.source.classList.add("rest-test-ok");
+                if (params.requestTarget) {
+                    params.requestTarget.classList.add("rest-test-ok");
                     tests_ok_count++;
                 }
                 if (params.responseHasToken && callAuthHeader !== null) {
@@ -79,15 +79,15 @@ function Restest(testall = true) {
                     testAuthItems();
                 }
             } else {
-                if (params.source) {
+                if (params.requestTarget) {
                     tests_error_count++;
-                    params.source.classList.add("rest-test-error");
-                    params.source.setAttribute("data-test-out-response", callResponse);
-                    params.source.setAttribute("data-test-out-status", callStatus);
-                    params.source.setAttribute("title", callStatus + " " + callResponse);
+                    params.requestTarget.classList.add("rest-test-error");
+                    params.requestTarget.setAttribute("data-test-out-response", callResponse);
+                    params.requestTarget.setAttribute("data-test-out-status", callStatus);
+                    params.requestTarget.setAttribute("title", callStatus + " " + callResponse);
                 }
             }
-            if (params.source) {
+            if (params.requestTarget) {
                 if (tests_error_count > 0) {
                     document.body.classList.add("rest-test-error-all");
                     document.body.classList.remove("rest-test-ok-all");
@@ -105,6 +105,22 @@ function Restest(testall = true) {
         }
     };
 
+    let clickToBrowseWithToken = function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            sendRestRequest(
+                    "get", anchor.href,
+                    function (callResponse, callStatus) {
+                        if (callStatus === 200) {
+                            document.body.innerText = callResponse;
+                        } else {
+                            document.body.innerText = "Status code: " + callStatus;
+                        }
+                    },
+                    null, null, null, bearer_token);
+            e.preventDefault();
+        });
+    };
+
     ///////////////////// public object methods
 
     this.makeRESTcall = function (params, responseCallback = null, async = true) {
@@ -112,8 +128,29 @@ function Restest(testall = true) {
             //default response callback
             responseCallback = makeDefaultResponseCallback(params);
         }
-        if (params.source) {
-            params.source.classList.add("rest-test-wait");
+        if (params.requestTarget) {
+            params.requestTarget.classList.add("rest-test-wait");
+        }
+        if (params.requestTarget) {
+            let requestText = "<strong>" + params.method.toUpperCase() + "</strong> "
+                    + (params.method.toUpperCase() === "GET" ? "<a href=\"" + params.url + "\">" : "") + params.url + (params.method.toUpperCase() === "GET" ? "</a>" : "");
+            if (params.acceptType !== null) {
+                requestText += "<br/><strong>Accept</strong>: " + params.acceptType;
+            }
+            if (params.payloadType !== null) {
+                requestText += "<br/><strong>Content-Type</strong>: " + params.payloadType;
+            }
+            if (bearer_token !== null) {
+                requestText += "<br/><strong>Authorization</strong>: Bearer " + bearer_token;
+            }
+            if (params.payload !== null) {
+                requestText += "<br/><br/>" + params.payload;
+            }
+            params.requestTarget.innerHTML = requestText;
+            if (params.needsAuthorization && params.method.toUpperCase() === "GET") {
+                let anchor = params.requestTarget.querySelector("a");
+                clickToBrowseWithToken(anchor);
+            }
         }
         console.log("calling " + params.method + " " + params.url + (params.needsAuthorization ? " with token " + bearer_token : "") + (params.responseHasToken ? " (getting bearer token)" : ""));
         sendRestRequest(params.method, params.url, responseCallback, params.acceptType, params.payload, params.payloadType, bearer_token, async);
@@ -125,23 +162,35 @@ function Restest(testall = true) {
         for (let i = 0; i < tl.length; ++i) {
             let element = tl.item(i);
 
-            let target = null;
+            let test_container = element.hasAttribute("href") ? element.closest("tr") : element;
+
+            let responseArea = null;
             if (element.hasAttribute("data-rest-test-target")) {
-                target = element.getAttribute("data-rest-test-target");
-                if (target !== "") {
-                    target = document.querySelector(target);
+                responseArea = element.getAttribute("data-rest-test-target");
+                if (responseArea !== "") {
+                    responseArea = document.querySelector(responseArea);
                 } else {
-                    let enclosing_tr = element.closest("tr");
-                    if (enclosing_tr !== null && enclosing_tr.querySelector(".output") !== null) {
-                        target = enclosing_tr.querySelector(".output");
+                    if (test_container !== null && test_container.querySelector(".output") !== null) {
+                        responseArea = test_container.querySelector(".output");
                     } else {
-                        target = null;
+                        responseArea = element;
                     }
                 }
             }
 
+            let requestArea = element.getAttribute("data-rest-test-request");
+            if (requestArea !== null && requestArea !== "") {
+                requestArea = document.querySelector(requestArea);
+            } else {
+                if (test_container !== null && test_container.querySelector(".request") !== null) {
+                    requestArea = test_container.querySelector(".request");
+                } else {
+                    requestArea = null;
+                }
+            }
+
+
             let params = {
-                source: tl.item(i),
                 url: element.hasAttribute("href") ? element.getAttribute("href") : element.getAttribute("data-rest-test-url"),
                 method: element.hasAttribute("data-rest-test-method") ? element.getAttribute("data-rest-test-method") : "GET",
                 payload: element.hasAttribute("data-rest-test-payload") ? element.getAttribute("data-rest-test-payload") : null,
@@ -150,12 +199,17 @@ function Restest(testall = true) {
                 needsAuthorization: element.hasAttribute("data-rest-test-auth"),
                 responseText: element.hasAttribute("data-rest-test-response") ? element.getAttribute("data-rest-test-response") : null,
                 responseStatus: element.hasAttribute("data-rest-test-status") ? element.getAttribute("data-rest-test-status") : 200,
-                responseTarget: target,
+                responseTarget: responseArea,
+                requestTarget: requestArea,
                 responseHasToken: element.hasAttribute("data-rest-test-token")
             };
+
             if (!params.needsAuthorization || bearer_token !== null) {
                 THIS.makeRESTcall(params);
             } else {
+                if (params.requestTarget) {
+                    params.requestTarget.classList.add("rest-test-auth");
+                }
                 token_waiting_list.push(params);
             }
         }
@@ -234,19 +288,7 @@ function Restest(testall = true) {
         let nl = document.querySelectorAll("a[href][data-rest-test-auth]");
         for (let i = 0; i < nl.length; ++i) {
             let anchor = nl.item(i);
-            anchor.addEventListener("click", function (e) {
-                sendRestRequest(
-                        "get", anchor.href,
-                        function (callResponse, callStatus) {
-                            if (callStatus === 200) {
-                                document.body.innerText = callResponse;
-                            } else {
-                                document.body.innerText = "Status code: " + callStatus;
-                            }
-                        },
-                        null, null, null, bearer_token);
-                e.preventDefault();
-            });
+            clickToBrowseWithToken(anchor);
         }
 
         //

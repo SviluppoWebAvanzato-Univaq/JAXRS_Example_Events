@@ -1,10 +1,13 @@
 package org.univaq.swa.eventsrest.business;
 
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.univaq.swa.eventsrest.DatabaseException;
+import org.univaq.swa.eventsrest.NotFoundException;
 import org.univaq.swa.eventsrest.model.Event;
 import org.univaq.swa.eventsrest.model.Participant;
 import org.univaq.swa.eventsrest.model.Recurrence;
@@ -33,17 +36,17 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public List<Event> getCurrentEvents(List<String> cat) {
-        return createDummyEventsList();
+        return createDummyEventsList(true);
     }
 
     @Override
     public Event getEvent(String uid) {
-        return createDummyEvent(uid);
+        return createDummyEvent(uid, false);
     }
 
     @Override
     public List<Event> getEvents(ZonedDateTime from, ZonedDateTime to, List<String> cat) {
-        return createDummyEventsList();
+        return createDummyEventsList(false);
     }
 
     @Override
@@ -66,6 +69,11 @@ public class EventsServiceImpl implements EventsService {
         //dummy
     }
 
+    @Override
+    public void updateAttachment(String uid, InputStream data) {
+        //dummy
+    }
+
     ///////
     Random random = new Random();
 
@@ -83,20 +91,24 @@ public class EventsServiceImpl implements EventsService {
         return "ID" + generatedString;
     }
 
-    private List<Event> createDummyEventsList() {
+    private List<Event> createDummyEventsList(boolean current) {
         List<Event> result = new ArrayList<>();
         int n = random.nextInt(1, 10);
         for (int i = 0; i < n; ++i) {
-            result.add(createDummyEvent(createUID()));
+            result.add(createDummyEvent(createUID(), current));
         }
         return result;
     }
 
-    private Event createDummyEvent(String uid) {
+    private Event createDummyEvent(String uid, boolean current) {
         Event e = new Event();
         e.setUid(uid);
         e.setSummary("Event " + e.getUid());
-        e.setStart(ZonedDateTime.now().plus(random.nextInt(30), ChronoUnit.DAYS));
+        if (current) {
+            e.setStart(ZonedDateTime.now().minus(random.nextInt(3), ChronoUnit.HOURS));
+        } else {
+            e.setStart(ZonedDateTime.now().plus(random.nextInt(30), ChronoUnit.DAYS));
+        }
         e.setEnd(e.getStart().plus(random.nextInt(5), ChronoUnit.HOURS));
         int np = random.nextInt(0, 3);
         for (int i = 0; i < np; ++i) {
@@ -113,6 +125,7 @@ public class EventsServiceImpl implements EventsService {
             e.setRecurrence(r);
         }
         e.setAttachment("ciao a tutti".getBytes());
+        e.getCategories().add(uid);
         return e;
     }
 
