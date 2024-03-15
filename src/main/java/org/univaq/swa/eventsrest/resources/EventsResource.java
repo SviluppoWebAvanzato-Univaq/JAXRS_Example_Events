@@ -113,7 +113,7 @@ public class EventsResource {
 
     @GET
     @Path("/count")
-    @Produces({"text/plain"})
+    @Produces({"text/plain","application/json"})
     public Response getNumberOfEvents(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("cat") List<String> cat) {
         if (from != null && !from.isBlank() && to != null && !to.isBlank()) {
             try {

@@ -63,14 +63,34 @@
                 </tr>
 
 
-                <tr data-rest-test data-rest-test-target data-rest-test-url="rest/events/count?from=2024-02-01T00:00Z&amp;to=2024-03-01T00:00Z&amp;cat=work,personal">
+                <tr data-rest-test data-rest-test-accept="text/plain" data-rest-test-target data-rest-test-url="rest/events/count?from=2024-02-01T00:00Z&amp;to=2024-03-01T00:00Z&amp;cat=work,personal">
                     <td>/events/count?from={a}&amp;to={b}&amp;cat={c}</td>
                     <td>GET</td>
                     <td>{a},{b}: ISO OFFSET DATETIME, {c}: comma-separated list</td>
                     <td></td>
                     <td></td>
                     <td class="request"></td>
-                    <td  class="output">Numero eventi filtrati</td>
+                    <td  class="output">Numero eventi filtrati (testo)</td>
+                </tr>
+                
+                <tr data-rest-test  data-rest-test-accept="application/json" data-rest-test-target data-rest-test-url="rest/events/count?from=2024-02-01T00:00Z&amp;to=2024-03-01T00:00Z&amp;cat=work,personal">
+                    <td>/events/count?from={a}&amp;to={b}&amp;cat={c}</td>
+                    <td>GET</td>
+                    <td>{a},{b}: ISO OFFSET DATETIME, {c}: comma-separated list</td>
+                    <td></td>
+                    <td></td>
+                    <td class="request"></td>
+                    <td  class="output">Numero eventi filtrati (JSON)</td>
+                </tr>
+                
+                <tr data-rest-test data-rest-test-status="406" data-rest-test-accept="application/pdf" data-rest-test-target data-rest-test-url="rest/events/count?from=2024-02-01T00:00Z&amp;to=2024-03-01T00:00Z&amp;cat=work,personal">
+                    <td>/events/count?from={a}&amp;to={b}&amp;cat={c}</td>
+                    <td>GET</td>
+                    <td>{a},{b}: ISO OFFSET DATETIME, {c}: comma-separated list</td>
+                    <td></td>
+                    <td></td>
+                    <td class="request"></td>
+                    <td  class="output">Numero eventi filtrati (PDF)</td>
                 </tr>
 
 
