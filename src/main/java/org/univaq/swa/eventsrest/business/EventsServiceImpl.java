@@ -6,8 +6,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.univaq.swa.eventsrest.DatabaseException;
-import org.univaq.swa.eventsrest.NotFoundException;
 import org.univaq.swa.eventsrest.model.Event;
 import org.univaq.swa.eventsrest.model.Participant;
 import org.univaq.swa.eventsrest.model.Recurrence;

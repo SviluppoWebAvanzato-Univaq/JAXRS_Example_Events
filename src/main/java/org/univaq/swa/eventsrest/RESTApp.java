@@ -7,7 +7,6 @@ import java.util.Set;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 import org.univaq.swa.eventsrest.jackson.ObjectMapperContextResolver;
-import org.univaq.swa.eventsrest.resources.EventResource;
 import org.univaq.swa.eventsrest.resources.EventsResource;
 import org.univaq.swa.eventsrest.security.AuthLoggedFilter;
 import org.univaq.swa.eventsrest.security.AuthenticationRes;
@@ -27,7 +26,6 @@ public class RESTApp extends Application {
         //aggiungiamo tutte le *root resurces* (cioè quelle
         //con l'annotazione Path) che vogliamo pubblicare
         c.add(EventsResource.class);
-        c.add(EventResource.class);
         c.add(AuthenticationRes.class);
 
         //aggiungiamo il provider Jackson per poter
