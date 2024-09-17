@@ -4,9 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import jakarta.ws.rs.core.UriInfo;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,18 +38,17 @@ public class JWTHelpers {
     }
 
     public String validateToken(String token) {
-        Jws<Claims> jwsc = Jwts.parserBuilder().setSigningKey(getJwtKey()).build().parseClaimsJws(token);
-        return jwsc.getBody().getSubject();
+        Jws<Claims> jwsc = Jwts.parser().verifyWith(getJwtKey()).build().parseSignedClaims(token);
+        return jwsc.getPayload().getSubject();
     }
 
     public String issueToken(UriInfo context, String username) {
-        Key key = getJwtKey();
         String token = Jwts.builder()
-                .setSubject(username)
-                .setIssuer(context.getAbsolutePath().toString())
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(ZonedDateTime.now().plusMinutes(15L).toInstant()))
-                .signWith(key)
+                .subject(username)
+                .issuer(context.getAbsolutePath().toString())
+                .issuedAt(new Date())
+                .expiration(Date.from(LocalDateTime.now().plusMinutes(15L).atZone(ZoneId.systemDefault()).toInstant()))
+                .signWith(getJwtKey())
                 .compact();
         return token;
     }
