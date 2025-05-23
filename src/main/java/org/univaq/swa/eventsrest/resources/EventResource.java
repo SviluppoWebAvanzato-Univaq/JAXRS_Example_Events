@@ -104,6 +104,59 @@ public class EventResource {
     }
 
     @Logged
+    @PUT
+    @Path("/recurrence")
+    @Consumes({"application/json"})
+    public Response updateRecurrence(Recurrence body, @Context SecurityContext securityContext) {
+        try {
+            business.updateRecurrence(event.getUid(), body);
+            return Response.noContent().build();
+        } catch (NotFoundException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
+        } catch (DatabaseException ex) {
+            return Response.serverError()
+                    .entity(ex.getMessage()) //NEVER IN PRODUCTION!
+                    .build();
+        }
+    }
+
+    @Logged
+    @PUT
+    @Path("/attachment")
+    @Consumes(MediaType.WILDCARD)
+    public Response updateAttachment(
+            @Context UriInfo c,
+            // Possiamo anche (per POST e PUT) dire a JAX-RS
+            // di fornirci il payload sotto forma ti uno stream.
+            // (utile spprattutto per payload lunghi o binari)
+            InputStream data) {
+
+        try {
+            business.updateAttachment(event.getUid(), data);
+        } catch (NotFoundException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
+        } catch (DatabaseException ex) {
+            return Response.serverError()
+                    .entity(ex.getMessage()) //NEVER IN PRODUCTION!
+                    .build();
+        }
+
+        return Response.noContent().build();
+    }
+
+    ///
+    //non ci sono metodi specificati, quindi per JAX-RS si tratta
+    //della restituzione di una sotto-risorsa
+    @Path("/participants")
+    public ParticipantsResource getParticipants() {
+        return new ParticipantsResource(event);
+    }
+
+    //In alternativa alla creazione della ParticipantsResource, i relativi metodi
+    //potrebbero sempre essere inseriti direttamente nella EventResource, come 
+    //mostrato qui sotto
+    /*    
+    @Logged
     @POST
     @Path("/participants")
     @Consumes({"application/json"})
@@ -144,45 +197,5 @@ public class EventResource {
     public Response listParticipants() {
         return Response.ok(event.getParticipants()).build();
     }
-
-    @Logged
-    @PUT
-    @Path("/recurrence")
-    @Consumes({"application/json"})
-    public Response updateRecurrence(Recurrence body, @Context SecurityContext securityContext) {
-        try {
-            business.updateRecurrence(event.getUid(), body);
-            return Response.noContent().build();
-        } catch (NotFoundException ex) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
-        } catch (DatabaseException ex) {
-            return Response.serverError()
-                    .entity(ex.getMessage()) //NEVER IN PRODUCTION!
-                    .build();
-        }
-    }
-
-    @Logged
-    @PUT
-    @Path("/attachment")
-    @Consumes(MediaType.WILDCARD)
-    public Response updateAttachment(
-            @Context UriInfo c,
-            // Possiamo anche (per POST e PUT) dire a JAX-RS
-            // di fornirci il payload sotto forma ti uno stream.
-            // (utile spprattutto per payload lunghi o binari)
-            InputStream data) {
-
-        try {
-            business.updateAttachment(event.getUid(), data);
-        } catch (NotFoundException ex) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
-        } catch (DatabaseException ex) {
-            return Response.serverError()
-                    .entity(ex.getMessage()) //NEVER IN PRODUCTION!
-                    .build();
-        }
-
-        return Response.noContent().build();
-    }
+     */
 }
