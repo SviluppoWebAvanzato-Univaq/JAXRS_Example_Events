@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import jakarta.ws.rs.core.UriInfo;
+import java.util.Map;
 
 /**
  *
@@ -21,29 +22,50 @@ import jakarta.ws.rs.core.UriInfo;
  */
 @Path("auth")
 public class AuthenticationRes {
-    
+
     @POST
     @Path("login")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response login(@Context UriInfo uriinfo,
-            //un altro modo per ricevere e iniettare i parametri con JAX-RS...
-            @FormParam("username") String username,
-            @FormParam("password") String password) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response login(@Context UriInfo uriinfo, Map<String, String> credentials) {
         try {
-            
-            if (AuthHelpers.getInstance().authenticateUser(username, password)) {
-                String authToken = AuthHelpers.getInstance().issueToken(uriinfo, username);
-                //Restituiamolo in tutte le modalità, giusto per fare un esempio...
-                return Response.ok(authToken)
-                        .cookie(new NewCookie.Builder("token").value(authToken).build())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + authToken).build();
+
+            if (AuthHelpers.getInstance().authenticateUser(credentials.getOrDefault("username", ""), credentials.getOrDefault("password", ""))) {
+                String authToken = AuthHelpers.getInstance().issueToken(uriinfo, credentials.get("username"));
+                return Response.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + authToken).build();
+                //Possiamo restituire il token in varie modalità, giusto per fare un esempio...
+                //.ok(authToken)
+                //.cookie(new NewCookie.Builder("token").value(authToken).build())
             }
         } catch (Exception e) {
             //logging dell'errore 
         }
         return Response.status(UNAUTHORIZED).build();
     }
-    
+
+    //un altro modo per ricevere e iniettare i parametri con JAX-RS...
+    @POST
+    @Path("login2")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response login(@Context UriInfo uriinfo,
+            @FormParam("username") String username,
+            @FormParam("password") String password) {
+        try {
+
+            if (AuthHelpers.getInstance().authenticateUser(username, password)) {
+                String authToken = AuthHelpers.getInstance().issueToken(uriinfo, username);
+
+                return Response.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + authToken).build();
+                //Possiamo restituire il token in varie modalità, giusto per fare un esempio...
+                //.ok(authToken)
+                //.cookie(new NewCookie.Builder("token").value(authToken).build())
+
+            }
+        } catch (Exception e) {
+            //logging dell'errore 
+        }
+        return Response.status(UNAUTHORIZED).build();
+    }
+
     @DELETE
     @Path("logout")
     @Logged
@@ -66,9 +88,10 @@ public class AuthenticationRes {
         //proprietà iniettata nella request dal filtro di autenticazione
         String username = (String) req.getProperty("user");
         String newtoken = AuthHelpers.getInstance().issueToken(uriinfo, username);
-        return Response.ok(newtoken)
-                .cookie(new NewCookie.Builder("token").value(newtoken).build())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + newtoken).build();
-        
+        return Response.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + newtoken).build();
+        //Possiamo restituire il token in varie modalità, giusto per fare un esempio...
+        //.ok(newtoken)
+        //.cookie(new NewCookie.Builder("token").value(newtoken).build())
+
     }
 }

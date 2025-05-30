@@ -25,15 +25,15 @@ public class AuthLoggedFilter implements ContainerRequestFilter {
         String token = null;
         final String path = requestContext.getUriInfo().getAbsolutePath().toString();
 
-        //come esempio, proviamo a cercare il token in vari punti, in ordine di priorità
-        //in un'applicazione reale, potremmo scegliere una sola modalità
         String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.substring("Bearer".length()).trim();
-        } else if (requestContext.getCookies().containsKey("token")) {
-            token = requestContext.getCookies().get("token").getValue();
-        } else if (requestContext.getUriInfo().getQueryParameters().containsKey("token")) {
-            token = requestContext.getUriInfo().getQueryParameters().getFirst("token");
+            //come esempio, proviamo a cercare il token in vari punti, in ordine di priorità
+            //in un'applicazione reale, potremmo scegliere una sola modalità
+            //} else if (requestContext.getCookies().containsKey("token")) {
+            //    token = requestContext.getCookies().get("token").getValue();
+            //} else if (requestContext.getUriInfo().getQueryParameters().containsKey("token")) {
+            //    token = requestContext.getUriInfo().getQueryParameters().getFirst("token");
         }
         if (token != null && !token.isEmpty()) {
             try {

@@ -221,7 +221,7 @@ function Restest(testall = true) {
         let u = document.getElementById("username-field").value;
         let p = document.getElementById("password-field").value;
         sendRestRequest(
-                "post", "rest/auth/login",
+                "post", "rest/auth/login2",
                 function (callResponse, callStatus, callAuthHeader) {
                     if (callStatus === 200) {
                         setToken(extractTokenFromHeader(callAuthHeader));
